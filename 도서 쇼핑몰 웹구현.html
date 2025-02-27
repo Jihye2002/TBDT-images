@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TBDT</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #0F7AEE;
+            text-align: center;
+        }
+
+        /* 팝업 스타일 */
+        .popup-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: flex; /* 처음부터 팝업이 보이도록 설정 */
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+
+        .popup-image {
+            max-width: 90%; /* 이미지 최대 너비 */
+            max-height: 80%; /* 이미지 최대 높이 */
+            object-fit: contain; /* 비율 유지하면서 화면에 맞춤 */
+            border-radius: 10px;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: rgba(0, 0, 0, 0.5);
+            color: white;
+            font-size: 24px;
+            border: none;
+            border-radius: 50%;
+            padding: 10px;
+            cursor: pointer;
+        }
+
+        .close-btn:hover {
+            background-color: rgba(0, 0, 0, 0.8);
+        }
+
+        .popup-details-btn {
+            position: absolute;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(0, 0, 0, 0.5);
+            color: white;
+            font-size: 18px;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .popup-details-btn:hover {
+            background-color: rgba(0, 0, 0, 0.8);
+        }
+
+        header {
+            background-color: #0F7AEE;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-left: 20px;
+            width: 100%;
+            box-sizing: border-box;
+            position: relative;
+            margin: 0 auto;
+        }
+
+        h1 {
+            font-size: 28px;
+            margin: 0;
+            padding-left: 20px; padding-top: 20px;
+            text-align: left;
+        }
+
+        /* 햄버거 버튼 스타일 */
+        .menu-button {
+            background: none; /* 배경 제거 */
+            border: none; /* 테두리 제거 */
+            cursor: pointer;
+            margin-left: 0px;
+            margin-right: 10px;
+            font-size: 18px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 45px;
+            width: 45px;
+            padding: 0px;
+        }
+
+        /* 버튼 안의 햄버거 아이콘 */
+        .menu-button i {
+            color: white; /* 아이콘 색상을 흰색으로 변경 */
+            font-size: 24px; /* 아이콘 크기 조정 */
+        }
+
+        /* 사이드 메뉴 */
+        .side-menu {
+            position: fixed;
+            top: 0;
+            left: -250px; /* 기본적으로 화면에서 숨김 */
+            width: 250px;
+            height: 100%;
+            background-color: white;
+            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.2);
+            transition: left 0.3s ease-in-out;
+            z-index: 1000;
+            padding-top: 50px;
+        }
+
+        .side-menu ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .side-menu ul li {
+            padding: 15px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .side-menu ul li a {
+            text-decoration: none;
+            color: #0F7AEE;
+            font-size: 18px;
+            display: block;
+        }
+
+        .side-menu ul li:hover {
+            background-color: #f0f0f0;
+        }
+
+        .searchBook-alert {
+            padding-top: 20px;
+            font-size: 16px;
+            color: #0F7AEE;
+            background-color: #f0f0f0;
+        }
+
+        .search-container {
+            padding-top: 40px; padding-right: 0px; padding-bottom: 20px; padding-left: 40px;
+            display: flex;
+            justify-content: left;
+            align-items: left;
+            max-width: 1500px;
+        }
+
+        .search-container input {
+            padding: 8px;
+            margin-right: 20px;
+            font-size: 16px;
+            width: 100%;
+            max-width: 1480px;
+            border-radius: 10px;
+            border: 1px solid #ccc;
+            height: 25px;
+        }
+
+        .search-container button {
+            padding: 8px;
+            color: #ccc;
+            border-radius: 50%;
+            border-color: #ccc;
+            cursor: pointer;
+            margin-left: 0px;
+            font-size: 18px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 45px;
+            width: 50px;
+        }
+
+        .search-container button:hover {
+            background-color: #f0f0f0;
+        }
+
+        button i {
+            color: #0F7AEE;
+            font-size: 16px;
+        }
+
+        .keeping-button {
+            background-color: white;
+            color: #0F7AEE;
+            padding: 10px 20px;
+            border-radius: 30px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: none;
+            border: none;
+            transition: background-color 0.3s, color 0.3s;
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+
+        .keeping-button:hover {
+            background-color: #0F7AEE;
+            color: white;
+        }
+
+        /* 전체 컨테이너를 세로 정렬 */
+        .main-container {
+            display: flex;
+            flex-direction: column; /* 세로 정렬 */
+            align-items: flex-start; /* 왼쪽 정렬 */
+            padding: 0 40px; /* h1과 동일한 패딩 */
+            width: 100%;
+        }
+
+        /* 네비게이션 바 스타일 */
+        nav {
+            color: white;
+            text-align: center;
+            position: relative;
+            padding-top: 20px;
+            padding-left: 40px;
+            padding-right: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            width: 100%;
+            height: 508px;
+        }
+
+        /* 슬라이드 이미지와 고정 이미지의 높이를 동일하게 설정 */
+        .fixed-image, .slide-image {
+            height: 100%; /* 높이를 부모 요소에 맞게 설정 */
+            object-fit: cover; /* 이미지가 부모 요소를 벗어나지 않도록 설정 */
+        }
+
+        /* 슬라이드 컨테이너 */
+        .slider-container {
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 720px;
+            height: 508px;
+            overflow: hidden;
+        }
+
+        /* 슬라이드 이미지 */
+        .slider-container img {
+            width: 720px;
+            height: 508px;
+            object-fit: cover;
+        }
+
+        /* 슬라이드 이동 영역 */
+        .slider {
+            display: flex;
+            width: 600%; /* 6개의 슬라이드 */
+            height: 100%;
+            transition: transform 1.5s ease-in-out;
+        }
+
+        /* 개별 슬라이드 */
+        .slide {
+            min-width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* prev 버튼 */
+        .prev {
+            position: absolute;
+            left: 40px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(0, 0, 0, 0.5);
+            border: none;
+            color: white;
+            padding: 10px;
+            cursor: pointer;
+        }
+
+        /* .next 버튼 (슬라이드 이미지 오른쪽에 배치) */
+        .next {
+            position: absolute;
+            right: 1880px; /* 오른쪽 슬라이드 이미지 오른쪽에 배치되도록 */
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(0, 0, 0, 0.5);
+            border: none;
+            color: white;
+            padding: 10px;
+            cursor: pointer;
+        }
+
+        /* 고정 이미지 */
+        .fixed-image img {
+            margin-left: 40px;
+            width: 720px;
+            height: 508px;
+            object-fit: cover;
+            border-radius: 0px;
+        }
+
+        /* 로그인 박스 위치 조정 */
+        .login-box {
+            position: absolute;
+            right: 360px; /* 사이드 이미지 오른쪽 여백 */
+            top: 36%; /* 중앙 정렬 */
+            transform: translateY(-50%);
+        }
+
+        /* 입력 필드 */
+        .input-group {
+            margin-bottom: 10px;
+        }
+
+        .input-group label {
+            display: block;
+            font-size: 14px;
+            margin-bottom: 5px;
+            text-align: left;
+        }
+
+        .input-group input {
+            width: 90%;
+            padding: 10px;
+            font-size: 14px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        /* 회원가입 & 찾기 링크 */
+        .account-links {
+            margin-top: 10px;
+            font-size: 14px;
+        }
+
+        .account-links a {
+            color: #000000;
+            text-decoration: none;
+        }
+
+        .account-links a:hover {
+            text-decoration: underline;
+        }
+
+        /* SNS 로그인 버튼 */
+        .sns-login {
+            margin-top: 15px;
+        }
+
+        .sns-login button {
+            width: 100%;
+            padding: 10px;
+            font-size: 14px;
+            border: none;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            cursor: pointer;
+        }
+
+        .naver-login {
+            background-color: #03c75a;
+            color: white;
+        }
+
+        .kakao-login {
+            background-color: #ffeb00;
+            color: black;
+        }
+
+        /* "주간 베스트셀러" 영역 */
+        .text-and-list {
+            margin-top: 10px;
+            width: 100%;
+        }
+
+        h3 {
+            color: white;
+            font-size: 18px;
+            margin-bottom: 10px; /* 책 목록과 간격 */
+            text-align: left;
+        }
+
+        /* 책 목록을 가로 정렬 */
+        .book-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 40px;
+            justify-content: flex-start; /* 왼쪽 정렬 */
+            padding: 0;
+            width: 100%;
+        }
+
+        .book {
+            display: flex;
+            flex-direction: column;
+            align-items: left;
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+            text-align: left;
+        }
+
+        .book:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+        }
+
+        .book img {
+            width: 200px;
+            height: 300px;
+            object-fit: cover;
+            border-radius: 0px;
+            margin-bottom: 10px;
+        }
+
+        .book h4 {
+            color: white;
+            font-size: 16px;
+            text-align: left;
+            word-break: break-word;
+        }
+
+        /* footer */
+        footer {
+            background-color: #0F7AEE;
+            color: white;
+            padding: 10px;
+            margin-top: 20px;
+        }
+    </style>
+        <script>
+            // 팝업 닫기 기능
+            function closePopup() {
+                document.getElementById('popup-container').style.display = 'none';
+            }
+
+            // 자세히 보기 버튼 클릭 시 새 창 열기
+            function openDetailsPage() {
+                window.open("https://example.com", "_blank");  // 원하는 URL로 변경하세요.
+            }
+            
+            // 장바구니 개수 업데이트
+            function updateCartCount() {
+                let cart = JSON.parse(localStorage.getItem("cart")) || {};
+                let count = Object.values(cart).reduce((sum, qty) => sum + qty, 0);
+                document.getElementById("cart-count").textContent = count;
+            }
+
+            // 책 상세 페이지로 이동
+            function goToDetail(bookTitle) {
+                window.location.href = `index.html?book=${encodeURIComponent(bookTitle)}`;
+            }
+
+            // 장바구니 페이지로 이동
+            function viewCart() {
+                window.location.href = "cart.html";
+            }
+
+            function toggleMenu() {
+                let menu = document.getElementById("side-menu");
+                if (menu.style.left === "0px") {
+                    menu.style.left = "-250px"; // 메뉴 닫기
+                } 
+                else {
+                    menu.style.left = "0px"; // 메뉴 열기
+                }
+            }
+
+            // 검색 기능
+            function searchBook(event) {
+                if (!event || event.key === "Enter" || event.type === "click") {
+                    let query = document.getElementById("search").value.trim();
+                    if (query.length > 0) {
+                        window.location.href = `search.html?query=${encodeURIComponent(query)}`;
+                    } else {
+                        alert("검색어를 입력하세요.");
+                    }
+                }
+            }
+
+            // 슬라이더 설정
+            function setupSlider() {
+                const slider = document.querySelector('.slider');
+                const slides = document.querySelectorAll('.slide');
+                const prevBtn = document.querySelector('.prev');
+                const nextBtn = document.querySelector('.next');
+
+                let currentIndex = 0;
+                const totalSlides = slides.length;
+                let autoSlideInterval;
+
+                function moveSlide(index) {
+                    currentIndex = (index + totalSlides) % totalSlides; // 슬라이드 무한 루프 처리
+                    slider.style.transform = `translateX(${-currentIndex * 100}%)`;
+                }
+
+                function startAutoSlide() {
+                    stopAutoSlide();
+                    autoSlideInterval = setInterval(() => moveSlide(currentIndex + 1), 10000);
+                }
+
+                function stopAutoSlide() {
+                    clearInterval(autoSlideInterval);
+                }
+
+                prevBtn.addEventListener('click', () => {
+                    moveSlide(currentIndex - 1);
+                    stopAutoSlide();
+                    setTimeout(startAutoSlide, 5000); // 10초 후 자동 슬라이드 재개
+                });
+
+                nextBtn.addEventListener('click', () => {
+                    moveSlide(currentIndex + 1);
+                    stopAutoSlide();
+                    setTimeout(startAutoSlide, 5000);
+                });
+
+                startAutoSlide();
+            }
+
+            // 페이지 로드 후 초기화
+            document.addEventListener("DOMContentLoaded", function () {
+                updateCartCount();
+                setupSlider();
+                    });
+
+            document.getElementById('login-form').addEventListener('submit', function(event) {
+                event.preventDefault(); // 폼의 기본 동작을 막고, JS로 처리
+
+                const username = document.getElementById('아이디').value;
+                const password = document.getElementById('비밀번호').value;
+
+                // 여기서 백엔드로 로그인 데이터를 보내는 로직을 구현합니다.
+                // 예시로 로그인을 처리하는 간단한 JS 코드입니다.
+                
+                if (username && password) {
+                    console.log('Login attempt:', { 아이디, 비밀번호 });
+
+                    // 백엔드 API 호출 예시
+                    fetch('https://your-backend-api.com/login', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ 아이디, 비밀번호 })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            alert('아이디와 비밀번호가 인증되었습니다.');
+                            // 로그인 성공 후 페이지 리디렉션 등을 처리
+                        } else {
+                            alert('아이디와 비밀번호를 다시 확인해주세요.');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('로그인에 실패하였습니다. 다시 시도해 주세요.');
+                    });
+                } else {
+                    alert('아이디와 비밀번호를 모두 입력하여 주세요.');
+                }
+            });
+
+            function handleLogin(provider) {
+                let loginUrl = "";
+                
+                if (provider === "naver") {
+                    loginUrl = "https://nid.naver.com/oauth2.0/authorize?client_id=YOUR_NAVER_CLIENT_ID&redirect_uri=YOUR_REDIRECT_URI&response_type=code";
+                } else if (provider === "kakao") {
+                    loginUrl = "https://kauth.kakao.com/oauth/authorize?client_id=YOUR_KAKAO_CLIENT_ID&redirect_uri=YOUR_REDIRECT_URI&response_type=code";
+                } else if (provider === "google") {
+                    loginUrl = "https://accounts.google.com/o/oauth2/auth?client_id=YOUR_GOOGLE_CLIENT_ID&redirect_uri=YOUR_REDIRECT_URI&response_type=code&scope=email%20profile";
+                }
+                
+                window.location.href = loginUrl;  // 로그인 페이지로 이동
+            }
+
+            function checkLoginStatus() {
+                const username = localStorage.getItem("username");  // 저장된 사용자 이름 가져오기
+                
+                if (username) {
+                    alert(username + "님 로그인이 확인되었습니다.");  // 알림 표시
+                    setTimeout(() => {
+                        window.location.href = "도서 쇼핑몰 웹구현.html";  // 홈페이지로 이동
+                    }, 2000);  // 2초 후 이동
+                }
+            }
+
+            // 페이지 로드 시 로그인 상태 확인
+            window.onload = checkLoginStatus;
+        </script>
+    </head>
+    <body>
+        <!-- 팝업 이미지 -->
+        <div id="popup-container" class="popup-container">
+            <button class="close-btn" onclick="closePopup()">×</button>
+            <img class="popup-image" src="https://raw.githubusercontent.com/Jihye2002/TBDT-images/refs/heads/main/testevent.jpg" alt="이벤트 팝업">
+            <button class="popup-details-btn" onclick="openDetailsPage()">자세히 보기</button>
+        </div>
+
+        <header>
+            <h1>책먹는 꿈나무[TBDT]</h1>
+            <button class="keeping-button" onclick="viewCart()">구매담기(<span id="cart-count">0</span>)</button>
+        </header>
+    
+        <!-- 검색 영역 -->
+        <div class="search-container">
+            <button class="menu-button" onclick="toggleMenu()">
+                <i class="fas fa-bars"></i> <!-- 햄버거 아이콘 -->
+            </button>
+            <input type="text" id="search" placeholder="책 검색..." onkeypress="searchBook(event)">
+            <button onclick="searchBook()" class="search-button">
+                <i class="fas fa-search"></i> <!-- 돋보기 아이콘 -->
+            </button>               
+        </div>       
+
+        <!-- 숨겨진 메뉴 -->
+        <div id="side-menu" class="side-menu">
+            <ul>
+                <li><a href="index.html">홈</a></li>
+                <li><a href="bestseller.html">베스트셀러</a></li>
+                <li><a href="newbooks.html">신간</a></li>
+                <li><a href="event.html">이벤트</a></li>
+                <li><a href="cart.html">장바구니</a></li>
+            </ul>
+        </div>
+    
+        <!-- 네비게이션 바 -->
+        <nav>
+            <div class="slider-container">
+                <div class="slider">
+                    <div class="slide">
+                        <img src="https://raw.githubusercontent.com/Jihye2002/TBDT-images/refs/heads/main/march_event.jpg" alt="이북이벤트">
+                    </div>
+                    <div class="slide">
+                        <img src="https://raw.githubusercontent.com/Jihye2002/TBDT-images/refs/heads/main/march_donation.jpg" alt="봄맞이 프로모션">
+                    </div>
+                    <div class="slide">
+                        <img src="https://raw.githubusercontent.com/Jihye2002/TBDT-images/refs/heads/main/march_recommend.jpg" alt="이달의 도서">
+                    </div>
+                    <div class="slide">
+                        <img src="https://raw.githubusercontent.com/Jihye2002/TBDT-images/refs/heads/main/new_event.jpg" alt="작가이벤트">
+                    </div>
+                    <div class="slide">
+                        <img src="https://raw.githubusercontent.com/Jihye2002/TBDT-images/refs/heads/main/new_comic.jpg" alt="주술회전 8호 출고">
+                    </div>
+                </div>    
+            </div>
+                <button class="prev">&#10094;</button>
+                <button class="next">&#10095;</button>
+
+            <!-- 오른쪽 고정 이미지 -->
+            <div class="fixed-image">
+                <a href="Airpods_detail.html">
+                    <img src="https://raw.githubusercontent.com/Jihye2002/TBDT-images/refs/heads/main/airpodspro_event.jpg" alt="AirPods Pro 이벤트">
+                </a>
+            </div>
+        </nav>
+        
+        <!-- 로그인 폼 -->
+        <div class="login-box">
+            <h2>로그인</h2>
+            
+            <!-- 아이디 입력 -->
+            <div class="input-group">
+                <label for="username">아이디</label>
+                <input type="text" id="username" name="username" placeholder="아이디를 입력하세요" required>
+            </div>
+
+            <!-- 비밀번호 입력 -->
+            <div class="input-group">
+                <label for="password">비밀번호</label>
+                <input type="password" id="password" name="password" placeholder="비밀번호를 입력하세요" required>
+            </div>
+
+            <!-- 회원가입 & 찾기 링크 -->
+            <div class="account-links">
+                <a href="#">회원가입</a> |
+                <a href="#">아이디 찾기</a> |
+                <a href="#">비밀번호 찾기</a>
+            </div>
+
+            <!-- SNS 로그인 -->
+            <div class="sns-login">
+                <!-- 네이버 로그인 버튼 -->
+                <a href="https://nid.naver.com/nidlogin.login" target="_blank">
+                    <button class="naver-login-btn">네이버로 로그인</button>
+                </a>
+                <!-- 카카오 로그인 버튼 -->
+                <a href="https://kauth.kakao.com/oauth/authorize?client_id=YOUR_CLIENT_ID&redirect_uri=YOUR_REDIRECT_URI&response_type=code" target="_blank">
+                    <button class="kakao-login-btn">카카오톡으로 로그인</button>
+                </a>
+                <!-- 구글 로그인 버튼 -->
+                <a href="https://accounts.google.com/o/oauth2/auth?client_id=YOUR_CLIENT_ID&redirect_uri=YOUR_REDIRECT_URI&response_type=code&scope=email%20profile" target="_blank">
+                    <button class="google-login-btn">구글로 로그인</button>
+                </a>
+            </div>
+        </div>
+        
+        <!-- 주간 베스트셀러 영역 -->
+        <div class="main-container">
+            <div class="text-and-list">
+                <h3>주간 베스트셀러</h3>
+                <div class="book-list">
+                    <div class="book" onclick="goToDetail('어른의 행복은 조용하다')">
+                        <img src='https://raw.githubusercontent.com/Jihye2002/TBDT-images/refs/heads/main/adult_happiness.jpg' alt='adult-happiness'>
+                        <h4>어른의 행복은 
+                            <br>조용하다
+                        </h4>
+                    </div>
+                    <div class="book" onclick="goToDetail('소년이 온다')">
+                        <img src='https://raw.githubusercontent.com/Jihye2002/TBDT-images/refs/heads/main/boy_comes.jpg' alt='boy-comes'>                      
+                        <h4>소년이 온다</h4>
+                    </div>
+                    <div class="book" onclick="goToDetail('STOP THE STEAL')">
+                        <img src='https://raw.githubusercontent.com/Jihye2002/TBDT-images/refs/heads/main/stop_the_steal.jpg' alt='stop-the-steal'>
+                        <h4>STOP THE STEAL</h4>
+                    </div>
+                    <div class="book" onclick="goToDetail('적당한 사람')">
+                        <img src='https://raw.githubusercontent.com/Jihye2002/TBDT-images/refs/heads/main/proper_person.jpg' alt='proper-person'>                    
+                        <h4>적당한 사람</h4>
+                    </div>
+                    <div class="book" onclick="goToDetail('해커스 토익 기출 VOCA')">
+                        <img src='https://i.postimg.cc/Kkqr2DKr/ht.jpg' alt='ht'>                     
+                        <h4>해커스 토익 기출 VOCA</h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+    
+        <footer>
+            <p>&copy; 2024 책먹는 꿈나무. All Rights Reserved.</p>
+        </footer>
+    </body>
+</html>
